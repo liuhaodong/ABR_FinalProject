@@ -6,9 +6,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Random;
 
-
 import weka.classifiers.Evaluation;
 import weka.core.Instances;
+
 
 public class my_nb {
 	public static void main(String[] args) throws Exception {
@@ -23,7 +23,11 @@ public class my_nb {
 		nb.buildClassifier(train);
 		Evaluation eval = new Evaluation(train);
 		eval.crossValidateModel(nb, train, 10, new Random(1));
-		System.out.println(eval.toSummaryString());
+		//System.out.println(eval.toSummaryString());
+		//double[] a; 
+		//a = nb.distributionForInstance(train.instance(4));	
+		//System.out.println(a[0]+a[1]);
+		
 	}
 
 }
