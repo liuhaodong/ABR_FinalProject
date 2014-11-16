@@ -14,7 +14,7 @@ public class my_nb {
 	public static void main(String[] args) throws Exception {
 
 		BufferedReader bReader = new BufferedReader(new FileReader(
-				"data/mushroom_train.arff"));
+				"data/mushroom_train_miss.arff"));
 		Instances train = new Instances(bReader);
 		train.setClassIndex(0);
 		bReader.close();
@@ -29,5 +29,5 @@ public class my_nb {
 		//System.out.println(a[0]+a[1]);
 		
 	}
-
+	
 }
