@@ -17,6 +17,7 @@ public class FeatureRemove {
 			if (tmpLine.startsWith("@data")) {
 				bw.write(tmpLine);
 				bw.write('\n');
+				bw.write(br.read());
 				int tmpChar = 0;
 				while ((tmpChar = br.read()) != -1) {
 					if (tmpChar == ',' || tmpChar == '\n') {
