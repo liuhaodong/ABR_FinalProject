@@ -4,10 +4,15 @@ import weka.classifiers.bayes.NaiveBayes;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.Enumeration;
 import java.util.Random;
 
 import weka.classifiers.Evaluation;
+import weka.core.Attribute;
+import weka.core.Instance;
 import weka.core.Instances;
+
+import java.util.Enumeration;
 
 public class compute_value_utility {
   public static void main(String[] args) throws Exception {
@@ -27,63 +32,42 @@ public class compute_value_utility {
     evaluation.setClassIndex(0);
     evaluationReader.close();
 
-    //int num_attribute_train = train.numAttributes();
-    //int num_instance_train = train.numInstances();
+    Attribute temp_attr = train.attribute(1);
+    Enumeration enu = temp_attr.enumerateValues();
+    while (enu.hasMoreElements() == true) {
+      train.instance(0).setValue(1, enu.nextElement().toString());
 
-    //int num_attribute_evaluation = evaluation.numAttributes();
-    //int num_instance_evaluation = evaluation.numInstances();
+      NaiveBayes nb1 = new NaiveBayes();
+      nb1.buildClassifier(train);
+      Evaluation eval1 = new Evaluation(train);
+      // eval1.crossValidateModel(nb1, train, 10, new Random(1));
+      double sum_LG = 0;
+      for (int i = 0; i < evaluation.numInstances(); i++) {
+        double[] a;
+        a = nb1.distributionForInstance(evaluation.instance(i));
+        eval1.evaluateModelOnce(nb1, evaluation.instance(i));
+        double isCorrect = eval1.correct();
+        double log;
 
-    // NaiveBayes nb = new NaiveBayes();
-    // nb.buildClassifier(train);
-    // Evaluation eval = new Evaluation(train);
-    // eval.crossValidateModel(nb, train, 10, new Random(1));
-    // eval.evaluateModel(nb, evaluation);
-    // System.out.println(eval.toSummaryString());
-
-    // System.out.println(train.instance(0).stringValue(1));
-    train.instance(0).setValue(1, oracle.instance(0).value(1));
-    // System.out.println(oracle.instance(0).stringValue(1));
-    // System.out.println(train.instance(0).stringValue(1));
-    // System.out.println(train.instance(2).stringValue(0));
-
-    NaiveBayes nb1 = new NaiveBayes();
-    nb1.buildClassifier(train);
-    Evaluation eval1 = new Evaluation(train);
-    // eval1.crossValidateModel(nb1, train, 10, new Random(1));
-    double sum_LG = 0;
-    for (int i = 0; i < evaluation.numInstances(); i++) {
-
-      double[] a;
-      a = nb1.distributionForInstance(evaluation.instance(i));
-      // System.out.println(a[0]);
-      // System.out.println(a[1]);
-      eval1.evaluateModelOnce(nb1, evaluation.instance(i));
-      // System.out.println(eval1.correct());
-      double isCorrect = eval1.correct();
-      double log;
-      //double pred = nb1.classifyInstance(evaluation.instance(0));
-      // System.out.println(pred);
-      // System.out.println(eval1.toSummaryString());
-      if (isCorrect == 1) {
-        if (a[0] >= a[1]) {
-          log = a[0];
+        if (isCorrect == 1) {
+          if (a[0] >= a[1]) {
+            log = a[0];
+          } else {
+            log = a[1];
+          }
         } else {
-          log = a[1];
+          if (a[0] >= a[1]) {
+            log = a[1];
+          } else {
+            log = a[0];
+          }
         }
-      } else {
-        if (a[0] >= a[1]) {
-          log = a[1];
-        } else {
-          log = a[0];
-        }
+
+        double LG;
+        LG = -Math.log(log);
+        sum_LG = sum_LG + LG;
       }
-
-      double LG;
-      LG = -Math.log(log);
-      sum_LG = sum_LG + LG;
-      // System.out.println(LG);
-    }
-    System.out.println(sum_LG);
-  }//end for
-
+      System.out.println(sum_LG);
+    }// end for
+  }// end while
 }
