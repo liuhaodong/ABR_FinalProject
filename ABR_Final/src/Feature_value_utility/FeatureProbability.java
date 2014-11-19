@@ -31,7 +31,6 @@ public class FeatureProbability {
 		HashMap<instanceFeature, Double> resultFeatureProbilityMap = new HashMap<>();
 		for (int i = 1; i < trainingInstances.numAttributes(); i++) {
 			Instances tmp = new Instances(trainingInstances);
-			System.out.println("feature: " + i);
 			tmp.setClassIndex(0);
 			// delete attributes
 			int count = 1;
@@ -63,33 +62,38 @@ public class FeatureProbability {
 			Attribute feature_1 = tmp.attribute(1);
 			Enumeration<?> values_1 = feature_1.enumerateValues();
 			
-			while(values_1.hasMoreElements())
-				System.out.println(values_1.nextElement().toString());
 			
 				
 
 			// loop through all possible values and calculate probility
+			
+			int valueIndex = 0;
 			while (values_0.hasMoreElements()) {
 				
 				String value_0 = values_0.nextElement().toString();
-				System.out.println("label: "+value_0 + "\n");
 				Instance tmp_instance = new Instance(2);
 				tmp_instance.setValue(trainingInstances.attribute(0), value_0);
 				tmp.add(tmp_instance);
 
 				 double[] featureProbability = nb
 				 .distributionForInstance(tmp.lastInstance());
-				 for(double d: featureProbability){
-					 System.out.println(d);
-				 }
+				 
+				 for (int j = 0; j < featureProbability.length; j++) {
+					 instanceFeature tmpInstanceFeature = new instanceFeature(i, feature_1.value(j), value_0);
+					 resultFeatureProbilityMap.put(tmpInstanceFeature, featureProbability[j]);
+				}
+				 
+				 valueIndex ++;
 			}
 		}
-		return null;
+		return resultFeatureProbilityMap;
 	}
 
 	public static void main(String[] args) throws Exception {
-		(new FeatureProbability())
+		HashMap<instanceFeature, Double> result = (new FeatureProbability())
 				.getFeatureProbility("data/mushroom_train.arff");
+		
+		System.out.println(result.get(new instanceFeature(1, "k", "e")));
 	}
 
 }
