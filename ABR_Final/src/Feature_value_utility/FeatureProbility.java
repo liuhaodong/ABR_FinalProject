@@ -26,7 +26,7 @@ public class FeatureProbility {
 
 	public HashMap<instanceFeature, Double> getFeatureProbility(String trainingPath) throws Exception{
 		Instances trainingInstances = getInstances(trainingPath);
-		HashMap<instanceFeature, Double> resultFeatureProbilityMap = new HashMap<>();
+		HashMap<instanceFeature, Double> resultFeatureProbilityMap = new HashMap<instanceFeature, Double>();
 		for(int i = 1; i< trainingInstances.numAttributes(); i++){
 			Instances tmp = trainingInstances;
 			
