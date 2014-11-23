@@ -1,26 +1,30 @@
 package dataUtility;
 
-public class instanceFeature {
+public class InstanceFeature {
 	public int featureIndex;
+	public int featureValueIndex;
 	public String featureValue;
 	public String instanceLabel;
 	
-	public instanceFeature() {
-		featureIndex = 0;
+	public InstanceFeature() {
+		featureIndex = featureValueIndex = 0;
 		featureValue = instanceLabel = "";
 	}
 	
-	public instanceFeature(int featureIndex, String featureValue, String instanceLabel){
+	public InstanceFeature(int featureIndex, Integer featureValueIndex, String featureValue, String instanceLabel){
 		this.featureIndex = featureIndex;
+		this.featureValueIndex = featureValueIndex;
 		this.featureValue = featureValue;
 		this.instanceLabel = instanceLabel;
 	}
+	
+	
 
 
 	@Override
 	public int hashCode() {
 		int hash = 0;
-		hash = featureIndex + featureValue.hashCode()
+		hash = featureIndex + featureValueIndex 
 				+ instanceLabel.hashCode();
 		return hash;
 	}
@@ -33,11 +37,17 @@ public class instanceFeature {
 			return false;
 		}
 
-		instanceFeature ins = (instanceFeature) obj;
+		InstanceFeature ins = (InstanceFeature) obj;
 
 		return featureIndex == ins.featureIndex
-				&& (featureValue.equals(ins.featureValue))
+				&& ( (featureValue.equals(ins.featureValue)) || featureValueIndex == ins.featureValueIndex)
 				&& (instanceLabel.equals(ins.instanceLabel));
+	}
+	
+	
+	@Override
+	public String toString(){
+		return "featureIndex: "+ this.featureIndex + "featureValueIndex: "+ this.featureValueIndex + "featureValue: "+ this.featureValue + "instanceLabel: "+ this.instanceLabel;
 	}
 
 }

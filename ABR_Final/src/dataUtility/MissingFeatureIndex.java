@@ -4,6 +4,7 @@ public class MissingFeatureIndex {
 	
 	public int instanceIndex;
 	public int featureIndex;
+	public String instanceLabel;
 	
 	public MissingFeatureIndex() {
 		// TODO Auto-generated constructor stub
@@ -12,6 +13,12 @@ public class MissingFeatureIndex {
 	public MissingFeatureIndex(int instanceIndex, int featureIndex){
 		this.instanceIndex = instanceIndex;
 		this.featureIndex = featureIndex;
+	}
+	
+	public MissingFeatureIndex(int instanceIndex, int featureIndex, String instanceLabel){
+		this.instanceIndex = instanceIndex;
+		this.featureIndex = featureIndex;
+		this.instanceLabel = instanceLabel;
 	}
 	
 	@Override
@@ -36,6 +43,6 @@ public class MissingFeatureIndex {
 	
 	@Override
 	public String toString(){
-		return "instanceIndex: "+this.instanceIndex + " featureIndex: "+ this.featureIndex;
+		return "instanceIndex: "+this.instanceIndex + " featureIndex: "+ this.featureIndex + " instanceLabel: "+ this.instanceLabel;
 	}
 }

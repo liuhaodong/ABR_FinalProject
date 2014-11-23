@@ -13,7 +13,7 @@ import weka.classifiers.bayes.NaiveBayes;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
-import dataUtility.instanceFeature;
+import dataUtility.InstanceFeature;
 
 public class FeatureProbability {
 
@@ -25,10 +25,10 @@ public class FeatureProbability {
 		return resultInstances;
 	}
 
-	public HashMap<instanceFeature, Double> getFeatureProbility(
+	public HashMap<InstanceFeature, Double> getFeatureProbility(
 			String trainingPath) throws Exception {
 		Instances trainingInstances = getInstances(trainingPath);
-		HashMap<instanceFeature, Double> resultFeatureProbilityMap = new HashMap<instanceFeature, Double>();
+		HashMap<InstanceFeature, Double> resultFeatureProbilityMap = new HashMap<InstanceFeature, Double>();
 		for (int i = 1; i < trainingInstances.numAttributes(); i++) {
 			Instances tmp = new Instances(trainingInstances);
 			tmp.setClassIndex(0);
@@ -79,7 +79,8 @@ public class FeatureProbability {
 				 .distributionForInstance(tmp.lastInstance());
 				 
 				 for (int j = 0; j < featureProbability.length; j++) {
-					 instanceFeature tmpInstanceFeature = new instanceFeature(i, feature_1.value(j), value_0);
+					 InstanceFeature tmpInstanceFeature = new InstanceFeature(i,j, feature_1.value(j), value_0);
+					 tmpInstanceFeature.featureValueIndex = j;
 					 resultFeatureProbilityMap.put(tmpInstanceFeature, featureProbability[j]);
 				}
 				 
@@ -90,9 +91,15 @@ public class FeatureProbability {
 	}
 
 	public static void main(String[] args) throws Exception {
-		HashMap<instanceFeature, Double> result = (new FeatureProbability())
+		HashMap<InstanceFeature, Double> result = (new FeatureProbability())
 				.getFeatureProbility("data/mushroom_train.arff");
-		System.out.println(result.get(new instanceFeature(1, "k", "e")));
+		
+		for (InstanceFeature tmpFeature : result.keySet()) {
+			System.out.println(tmpFeature.toString());
+			System.out.println("probability: "+ result.get(tmpFeature));
+		}
+		
+		System.out.println(result.get(new InstanceFeature(6800,13, "", "e")));
 	}
 
 }
