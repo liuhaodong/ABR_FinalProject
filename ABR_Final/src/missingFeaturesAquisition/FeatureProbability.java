@@ -1,4 +1,4 @@
-package Feature_value_utility;
+package missingFeaturesAquisition;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -83,7 +83,7 @@ public class FeatureProbability {
 					 resultFeatureProbilityMap.put(tmpInstanceFeature, featureProbability[j]);
 				}
 				 
-				 valueIndex ++;
+				 valueIndex++;
 			}
 		}
 		return resultFeatureProbilityMap;
@@ -92,7 +92,6 @@ public class FeatureProbability {
 	public static void main(String[] args) throws Exception {
 		HashMap<instanceFeature, Double> result = (new FeatureProbability())
 				.getFeatureProbility("data/mushroom_train.arff");
-		
 		System.out.println(result.get(new instanceFeature(1, "k", "e")));
 	}
 
