@@ -1,7 +1,11 @@
 package missingFeaturesAquisition;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import dataUtility.MissingFeatureIndex;
 import dataUtility.InstanceFeature;
@@ -23,7 +27,6 @@ public class CalculateExpectation {
 			ArrayList<Double> tmpFeatureLGList = featureLGMap.get(tmpMissIndex);
 			double expectation = 0;
 			for (int i = 0; i < tmpFeatureLGList.size(); i++) {
-				System.out.println(tmpMissIndex.toString());
 				expectation += tmpFeatureLGList.get(i)
 						* featureValueProbabilityMap.get(new InstanceFeature(
 								tmpMissIndex.featureIndex,
@@ -34,6 +37,28 @@ public class CalculateExpectation {
 		}
 		return featureExpectationMap;
 	}
+	
+	
+	
+	public static class ValueComparator implements Comparator<MissingFeatureIndex>{
+		
+		Map<MissingFeatureIndex, Double> base;
+		
+		public ValueComparator(Map<MissingFeatureIndex, Double> base) {
+			this.base = base;
+		}
+
+		@Override
+		public int compare(MissingFeatureIndex arg0, MissingFeatureIndex arg1) {
+			if (base.get(arg0).doubleValue() < base.get(arg1).doubleValue()) {
+				return -1;
+			}else {
+				return 1;
+			}
+			
+		}
+		
+	}
 
 	public static void main(String[] args) throws Exception {
 		CalculateExpectation test = new CalculateExpectation();
@@ -42,9 +67,15 @@ public class CalculateExpectation {
 				.calculateFeatureExpectation("data/mushroom_train.arff",
 						"data/mushroom_train_miss.arff",
 						"data/mushroom_evaluation.arff");
+		ValueComparator comparator = new ValueComparator(resultMap);
+		TreeMap<MissingFeatureIndex, Double> sortedMap = new TreeMap<MissingFeatureIndex, Double>(comparator);
 		
-		for (MissingFeatureIndex tmpFeatureIndex : resultMap.keySet()) {
-			System.out.println(tmpFeatureIndex.toString()+ " Expectation: " + resultMap.get(tmpFeatureIndex));
+		sortedMap.putAll(resultMap);
+		
+		//System.out.println("sorted: " + sortedMap);
+		
+		for (Entry<MissingFeatureIndex, Double> tmpEntry : sortedMap.entrySet()) {
+			System.out.println(tmpEntry.getKey().toString()+ " Expectation: " + tmpEntry.getValue());
 		}
 	}
 
