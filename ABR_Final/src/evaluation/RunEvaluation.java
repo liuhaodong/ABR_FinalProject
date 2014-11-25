@@ -29,7 +29,7 @@ public class RunEvaluation {
 		sortedMap.putAll(resultMap);
 		
 		Instances oracleInstances = ReadInstances.readInstances("data/mushroom_train.arff");
-		Instances trainInstances = ReadInstances.readInstances("data/mushroom_train.arff");
+		Instances trainInstances = ReadInstances.readInstances("data/mushroom_train_miss.arff");
 		
 		Evaluation trainEval = NBCV.eval(trainInstances);
 		System.out.println(trainEval.toSummaryString());
@@ -43,7 +43,8 @@ public class RunEvaluation {
 			}
 			int tmpInstanceIndex = tmpEntry.getKey().instanceIndex;
 			int tmpFeatureIndex = tmpEntry.getKey().featureIndex;
-			trainInstances.instance(tmpInstanceIndex).setValue(trainInstances.attribute(tmpFeatureIndex), oracleInstances.instance(tmpInstanceIndex).stringValue(oracleInstances.attribute(tmpFeatureIndex)));
+			trainInstances.instance(tmpInstanceIndex).setValue(tmpFeatureIndex, oracleInstances.instance(tmpInstanceIndex).toString(tmpFeatureIndex));
+			//trainInstances.instance(tmpInstanceIndex).setValue(trainInstances.attribute(tmpFeatureIndex), oracleInstances.instance(tmpInstanceIndex).stringValue(oracleInstances.attribute(tmpFeatureIndex)));
 		}
 		
 		Evaluation trainEval2 = NBCV.eval(trainInstances);
