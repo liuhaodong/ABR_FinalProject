@@ -1,6 +1,7 @@
 package evaluation;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Map.Entry;
@@ -14,41 +15,163 @@ import dataUtility.ReadInstances;
 
 public class RunEvaluation {
 
-	public static void main(String[] args) throws Exception {
+	public static ArrayList<MissingFeatureIndex> getQueryFeatures(
+			String trainPath, double selectPercentage) throws IOException {
+		Instances trainInstances = ReadInstances.readInstances(trainPath);
+		ArrayList<MissingFeatureIndex> resultList = new ArrayList<MissingFeatureIndex>();
+		for (int i = 0; i < trainInstances.numInstances(); i++) {
+			for (int j = 0; j < trainInstances.numAttributes(); j++) {
+				if (trainInstances.instance(i).isMissing(j)) {
+					double rand = Math.random();
+					if (rand < selectPercentage) {
+						resultList.add(new MissingFeatureIndex(i, j));
+					}
+				}
+			}
+		}
+		return resultList;
+	}
+
+	public static ArrayList<MissingFeatureIndex> getQueryFeatures(
+			String trainPath, int queryNum) throws IOException {
+		Instances trainInstances = ReadInstances.readInstances(trainPath);
+		ArrayList<MissingFeatureIndex> resultList = new ArrayList<MissingFeatureIndex>();
+
+		int count = 0;
+
+		for (int i = 0; i < trainInstances.numInstances() && count < queryNum; i++) {
+			for (int j = 0; j < trainInstances.numAttributes(); j++) {
+				if (trainInstances.instance(i).isMissing(j)) {
+					resultList.add(new MissingFeatureIndex(i, j));
+					count++;
+				}
+			}
+		}
+
+		return resultList;
+	}
+
+	public static void evaluateRandomLearner(String oraclePath,
+			String trainPath, String evaluationPath) throws Exception {
+		Instances trainInstances = ReadInstances.readInstances(trainPath);
+		Instances oracleInstances = ReadInstances.readInstances(oraclePath);
+		Instances evaluationInstances = ReadInstances
+				.readInstances(evaluationPath);
+
+		ArrayList<MissingFeatureIndex> featuresToQuery = getQueryFeatures(
+				trainPath, 1);
+
+		Evaluation trainEval = NBEvaluate.eval(trainInstances,
+				evaluationInstances);
+		System.out.println(trainEval.toSummaryString());
+
+		for (MissingFeatureIndex tmpFeatureIndex : featuresToQuery) {
+			trainInstances.instance(tmpFeatureIndex.instanceIndex).setValue(
+					tmpFeatureIndex.featureIndex,
+					oracleInstances.instance(tmpFeatureIndex.instanceIndex)
+							.stringValue(tmpFeatureIndex.featureIndex));
+		}
+
+		Evaluation trainEval2 = NBEvaluate.eval(trainInstances,
+				evaluationInstances);
+		System.out.println(trainEval2.toSummaryString());
+	}
+
+	public static void evaluateSequentialLearner(String oraclePath,
+			String trainPath, String evaluationPath) throws Exception {
+		Instances trainInstances = ReadInstances.readInstances(trainPath);
+		Instances oracleInstances = ReadInstances.readInstances(oraclePath);
+		Instances evaluationInstances = ReadInstances
+				.readInstances(evaluationPath);
+
+		ArrayList<MissingFeatureIndex> featuresToQuery = getQueryFeatures(
+				trainPath, 100);
+
+		Evaluation trainEval = NBEvaluate.eval(trainInstances,
+				evaluationInstances);
+		System.out.println(trainEval.toSummaryString());
+
+		for (MissingFeatureIndex tmpFeatureIndex : featuresToQuery) {
+			trainInstances.instance(tmpFeatureIndex.instanceIndex).setValue(
+					tmpFeatureIndex.featureIndex,
+					oracleInstances.instance(tmpFeatureIndex.instanceIndex)
+							.stringValue(tmpFeatureIndex.featureIndex));
+		}
+
+		Evaluation trainEval2 = NBEvaluate.eval(trainInstances,
+				evaluationInstances);
+		System.out.println(trainEval2.toSummaryString());
+	}
+
+	public static void evaluateActiveLeaner(Instances oracleInstances,
+			Instances trainInstances, Instances evalInstances) throws Exception {
 
 		CalculateExpectation test = new CalculateExpectation();
 
 		HashMap<MissingFeatureIndex, Double> resultMap = test
-				.calculateFeatureExpectation("data/mushroom_train.arff",
-						"data/mushroom_train_miss.arff",
-						"data/mushroom_evaluation.arff");
+				.calculateFeatureExpectation(oracleInstances, trainInstances,
+						evalInstances);
 		ValueComparator comparator = new ValueComparator(resultMap);
 		TreeMap<MissingFeatureIndex, Double> sortedMap = new TreeMap<MissingFeatureIndex, Double>(
 				comparator);
 
 		sortedMap.putAll(resultMap);
-		
-		Instances oracleInstances = ReadInstances.readInstances("data/mushroom_train.arff");
-		Instances trainInstances = ReadInstances.readInstances("data/mushroom_train_miss.arff");
-		
-		Evaluation trainEval = NBCV.eval(trainInstances);
+
+		Evaluation trainEval = NBEvaluate.eval(trainInstances, evalInstances);
 		System.out.println(trainEval.toSummaryString());
 		int batchNum = 50;
-		
+
+
 		for (Entry<MissingFeatureIndex, Double> tmpEntry : sortedMap.entrySet()) {
 			if (batchNum == 0) {
 				break;
-			}else {
+			} else {
 				batchNum--;
 			}
 			int tmpInstanceIndex = tmpEntry.getKey().instanceIndex;
 			int tmpFeatureIndex = tmpEntry.getKey().featureIndex;
-			trainInstances.instance(tmpInstanceIndex).setValue(tmpFeatureIndex, oracleInstances.instance(tmpInstanceIndex).toString(tmpFeatureIndex));
-			//trainInstances.instance(tmpInstanceIndex).setValue(trainInstances.attribute(tmpFeatureIndex), oracleInstances.instance(tmpInstanceIndex).stringValue(oracleInstances.attribute(tmpFeatureIndex)));
+		//	System.out.println("instance quieried id: " + tmpInstanceIndex
+		//			+ " feature id: " + tmpFeatureIndex);
+			trainInstances.instance(tmpInstanceIndex).setValue(
+					tmpFeatureIndex,
+					oracleInstances.instance(tmpInstanceIndex).stringValue(
+							tmpFeatureIndex));
 		}
-		
-		Evaluation trainEval2 = NBCV.eval(trainInstances);
+
+		Evaluation trainEval2 = NBEvaluate.eval(trainInstances, evalInstances);
 		System.out.println(trainEval2.toSummaryString());
+
+	}
+
+	public static void evaluateActiveLeaner(String oraclePath,
+			String trainPath, String evaluationPath) throws Exception {
+
+		Instances oracleInstances = ReadInstances.readInstances(oraclePath);
+		Instances trainInstances = ReadInstances.readInstances(trainPath);
+		Instances evalInstances = ReadInstances.readInstances(evaluationPath);
+
+		evaluateActiveLeaner(oracleInstances, trainInstances, evalInstances);
+
+	}
+
+	public static void evaluateSimplifiedActiveLeaner(String oraclePath,
+			String trainPath, String evaluationPath) {
+
+	}
+
+	public static void main(String[] args) throws Exception {
+
+		Instances oracleInstances = ReadInstances
+				.readInstances("data/mushroom_train.arff");
+		Instances trainInstances = ReadInstances
+				.readInstances("data/mushroom_train_miss.arff");
+		Instances evalInstances = ReadInstances
+				.readInstances("data/mushroom_evaluation.arff");
+
+
+		evaluateActiveLeaner(oracleInstances, trainInstances, evalInstances);
+
+		evaluateActiveLeaner(oracleInstances, trainInstances, evalInstances);
 
 	}
 

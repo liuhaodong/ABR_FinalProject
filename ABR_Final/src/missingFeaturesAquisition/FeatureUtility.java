@@ -14,6 +14,7 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 import dataUtility.MissingFeatureIndex;
+import dataUtility.ReadInstances;
 
 public class FeatureUtility {
 
@@ -29,18 +30,13 @@ public class FeatureUtility {
 		instancesReader.close();
 		return instances;
 	}
-
+	
 	public HashMap<MissingFeatureIndex, ArrayList<Double>> calculateLG(
-			String oraclePath, String trainingPath, String evalPath)
+			Instances oracle, Instances train, Instances eval)
 			throws Exception {
 
-		Instances oracle = readInstances(oraclePath);
 		oracle.setClassIndex(classLabelIndex);
-
-		Instances train = readInstances(trainingPath);
 		train.setClassIndex(classLabelIndex);
-
-		Instances eval = readInstances(evalPath);
 		eval.setClassIndex(classLabelIndex);
 
 		classValueIndexMap = new HashMap<String, Integer>();
@@ -57,7 +53,7 @@ public class FeatureUtility {
 		}
 
 		for (int i = 0; i < train.numInstances(); i++) {
-			System.out.println("instance: " + i);
+			//System.out.println("instance: " + i);
 			for (int j = 0; j < train.numAttributes(); j++) {
 				Instance tmpInstance = train.instance(i);
 				ArrayList<Double> sumLGList = new ArrayList<Double>();
@@ -94,6 +90,9 @@ public class FeatureUtility {
 						}
 						sumLGList.add(sumLG);
 					}
+					
+					train.instance(i).setMissing(j);
+					
 					resultMap.put(new MissingFeatureIndex(i, j, train.instance(i).stringValue(classLabelIndex)), sumLGList);
 				} else {
 					continue;
@@ -101,6 +100,17 @@ public class FeatureUtility {
 			}
 		}
 		return resultMap;
+	}
+
+	public HashMap<MissingFeatureIndex, ArrayList<Double>> calculateLG(
+			String oraclePath, String trainingPath, String evalPath)
+			throws Exception {
+
+		Instances oracle = ReadInstances.readInstances(oraclePath);
+		Instances train = ReadInstances.readInstances(trainingPath);
+		Instances eval = ReadInstances.readInstances(evalPath);
+	
+		return this.calculateLG(oracle, train, eval);
 	}
 
 	public static void main(String[] args) throws Exception {

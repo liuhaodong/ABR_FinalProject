@@ -14,6 +14,7 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 import dataUtility.InstanceFeature;
+import dataUtility.ReadInstances;
 
 public class FeatureProbability {
 
@@ -24,10 +25,9 @@ public class FeatureProbability {
 		resultInstances.deleteAttributeAt(15);
 		return resultInstances;
 	}
-
-	public HashMap<InstanceFeature, Double> getFeatureProbility(
-			String trainingPath) throws Exception {
-		Instances trainingInstances = getInstances(trainingPath);
+	
+	public  HashMap<InstanceFeature, Double> getFeatureProbility(
+			Instances trainingInstances) throws Exception {
 		HashMap<InstanceFeature, Double> resultFeatureProbilityMap = new HashMap<InstanceFeature, Double>();
 		for (int i = 1; i < trainingInstances.numAttributes(); i++) {
 			Instances tmp = new Instances(trainingInstances);
@@ -88,6 +88,12 @@ public class FeatureProbability {
 			}
 		}
 		return resultFeatureProbilityMap;
+	}
+
+	public HashMap<InstanceFeature, Double> getFeatureProbility(
+			String trainingPath) throws Exception {
+		Instances trainingInstances = ReadInstances.readInstances(trainingPath);
+		return this.getFeatureProbility(trainingInstances);
 	}
 
 	public static void main(String[] args) throws Exception {
