@@ -1,6 +1,5 @@
 package missingFeaturesAquisition;
 
-import weka.classifiers.Evaluation;
 import weka.classifiers.bayes.NaiveBayes;
 
 import java.io.BufferedReader;
@@ -29,6 +28,77 @@ public class FeatureUtility {
 		instances.deleteAttributeAt(15);
 		instancesReader.close();
 		return instances;
+	}
+	
+	public HashMap<MissingFeatureIndex, ArrayList<Double>> calculateLG(
+			Instances oracle, Instances train, Instances eval, double selectRate)
+			throws Exception{
+
+		oracle.setClassIndex(classLabelIndex);
+		train.setClassIndex(classLabelIndex);
+		eval.setClassIndex(classLabelIndex);
+
+		classValueIndexMap = new HashMap<String, Integer>();
+
+		HashMap<MissingFeatureIndex, ArrayList<Double>> resultMap = new HashMap<MissingFeatureIndex, ArrayList<Double>>();
+
+		int tmpIndex = 0;
+		Enumeration<?> classValueEnum = eval.attribute(classLabelIndex)
+				.enumerateValues();
+		while (classValueEnum.hasMoreElements()) {
+			classValueIndexMap.put(classValueEnum.nextElement().toString(),
+					tmpIndex);
+			tmpIndex++;
+		}
+
+		for (int i = 0; i < train.numInstances()&&Math.random()<selectRate; i++) {
+			//System.out.println("instance: " + i);
+			for (int j = 0; j < train.numAttributes(); j++) {
+				Instance tmpInstance = train.instance(i);
+				ArrayList<Double> sumLGList = new ArrayList<Double>();
+				if (tmpInstance.isMissing(j)) {
+					// If a feature is missing, then calculate LG
+					Attribute missAttribute = tmpInstance.attribute(j);
+					Enumeration<?> missValues = missAttribute.enumerateValues();
+
+					while (missValues.hasMoreElements()) {
+						try {
+							train.instance(i).setValue(j,
+									missValues.nextElement().toString());
+						} catch (Exception e) {
+							e.printStackTrace();
+							System.out.println("FeatureIndex: " + j
+									+ "missValue: "
+									+ missValues.nextElement().toString());
+						}
+
+						NaiveBayes nb = new NaiveBayes();
+						nb.buildClassifier(train);
+						double tmpLG = 0;
+						double sumLG = 0;
+						for (int k = 0; k < eval.numInstances(); k++) {
+							double[] probabilityDistribution = nb
+									.distributionForInstance(eval.instance(k));
+							String instanceClassLabel = eval.instance(k)
+									.stringValue(classLabelIndex);
+							int labelIndex = classValueIndexMap
+									.get(instanceClassLabel);
+							double log = probabilityDistribution[labelIndex];
+							tmpLG = -Math.log(log);
+							sumLG = sumLG + tmpLG;
+						}
+						sumLGList.add(sumLG);
+					}
+					
+					train.instance(i).setMissing(j);
+					
+					resultMap.put(new MissingFeatureIndex(i, j, train.instance(i).stringValue(classLabelIndex)), sumLGList);
+				} else {
+					continue;
+				}
+			}
+		}
+		return resultMap;
 	}
 	
 	public HashMap<MissingFeatureIndex, ArrayList<Double>> calculateLG(

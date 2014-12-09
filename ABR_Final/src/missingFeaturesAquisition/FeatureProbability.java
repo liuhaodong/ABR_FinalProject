@@ -11,6 +11,7 @@ import java.util.Random;
 import weka.classifiers.Evaluation;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.core.Attribute;
+import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 import dataUtility.InstanceFeature;
@@ -71,7 +72,7 @@ public class FeatureProbability {
 			while (values_0.hasMoreElements()) {
 				
 				String value_0 = values_0.nextElement().toString();
-				Instance tmp_instance = new Instance(2);
+				Instance tmp_instance = new DenseInstance(2);
 				tmp_instance.setValue(trainingInstances.attribute(0), value_0);
 				tmp.add(tmp_instance);
 

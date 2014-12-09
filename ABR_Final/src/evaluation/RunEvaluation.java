@@ -153,10 +153,54 @@ public class RunEvaluation {
 		evaluateActiveLeaner(oracleInstances, trainInstances, evalInstances);
 
 	}
+	
+	public static void evaluateSimplifiedActiveLeaner(Instances oracleInstances,
+			Instances trainInstances, Instances evalInstances, double selectRate) throws Exception{
+
+		CalculateExpectation test = new CalculateExpectation();
+
+		HashMap<MissingFeatureIndex, Double> resultMap = test
+				.calculateSimplifiedFeatureExpectation(oracleInstances, trainInstances,
+						evalInstances, selectRate);
+		ValueComparator comparator = new ValueComparator(resultMap);
+		TreeMap<MissingFeatureIndex, Double> sortedMap = new TreeMap<MissingFeatureIndex, Double>(
+				comparator);
+
+		sortedMap.putAll(resultMap);
+
+		Evaluation trainEval = NBEvaluate.eval(trainInstances, evalInstances);
+		System.out.println(trainEval.toSummaryString());
+		int batchNum = 100;
+
+
+		for (Entry<MissingFeatureIndex, Double> tmpEntry : sortedMap.entrySet()) {
+			if (batchNum == 0) {
+				break;
+			} else {
+				batchNum--;
+			}
+			int tmpInstanceIndex = tmpEntry.getKey().instanceIndex;
+			int tmpFeatureIndex = tmpEntry.getKey().featureIndex;
+		//	System.out.println("instance quieried id: " + tmpInstanceIndex
+		//			+ " feature id: " + tmpFeatureIndex);
+			trainInstances.instance(tmpInstanceIndex).setValue(
+					tmpFeatureIndex,
+					oracleInstances.instance(tmpInstanceIndex).stringValue(
+							tmpFeatureIndex));
+		}
+
+		Evaluation trainEval2 = NBEvaluate.eval(trainInstances, evalInstances);
+		System.out.println(trainEval2.toSummaryString());
+
+	}
 
 	public static void evaluateSimplifiedActiveLeaner(String oraclePath,
-			String trainPath, String evaluationPath) {
+			String trainPath, String evaluationPath, double selectRate) throws Exception {
+		Instances oracleInstances = ReadInstances.readInstances(oraclePath);
+		Instances trainInstances = ReadInstances.readInstances(trainPath);
+		Instances evalInstances = ReadInstances.readInstances(evaluationPath);
 
+		evaluateSimplifiedActiveLeaner(oracleInstances, trainInstances, evalInstances, selectRate);
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -169,9 +213,9 @@ public class RunEvaluation {
 				.readInstances("data/mushroom_evaluation.arff");
 
 
-		evaluateActiveLeaner(oracleInstances, trainInstances, evalInstances);
+		evaluateSimplifiedActiveLeaner(oracleInstances, trainInstances, evalInstances,1);
 
-		evaluateActiveLeaner(oracleInstances, trainInstances, evalInstances);
+		evaluateSimplifiedActiveLeaner(oracleInstances, trainInstances, evalInstances,1);
 
 	}
 

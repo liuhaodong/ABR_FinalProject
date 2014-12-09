@@ -13,6 +13,44 @@ import dataUtility.InstanceFeature;
 
 public class CalculateExpectation {
 	
+	public HashMap<MissingFeatureIndex, Double> calculateSimplifiedFeatureExpectation(
+			Instances oracleInstances, Instances trainingInstances, Instances evalInstances, double selectRate)
+			throws Exception{
+
+		HashMap<InstanceFeature, Double> featureValueProbabilityMap = (new FeatureProbability())
+				.getFeatureProbility(trainingInstances);
+		
+		
+		System.out.println("Finished Calculating Feature Probability. Start Calculating Log Gain");
+		
+		HashMap<MissingFeatureIndex, ArrayList<Double>> featureLGMap = (new FeatureUtility())
+				.calculateLG(oracleInstances, trainingInstances, evalInstances, selectRate);
+		
+		
+		System.out.println("Finished Calculating Log Gain. Start Calculating Feature Expectation." );
+
+		HashMap<MissingFeatureIndex, Double> featureExpectationMap = new HashMap<MissingFeatureIndex, Double>();
+
+		for (MissingFeatureIndex tmpMissIndex : featureLGMap.keySet()) {
+			ArrayList<Double> tmpFeatureLGList = featureLGMap.get(tmpMissIndex);
+			double expectation = 0;
+			for (int i = 0; i < tmpFeatureLGList.size(); i++) {
+				expectation += tmpFeatureLGList.get(i)
+						* featureValueProbabilityMap.get(new InstanceFeature(
+								tmpMissIndex.featureIndex, i, "",
+								tmpMissIndex.instanceLabel));
+			}
+			featureExpectationMap.put(tmpMissIndex, expectation);
+		}
+		
+		
+		
+		System.out.println("Finished Calculating Feature Expectation.");
+		
+		return featureExpectationMap;
+	}
+	
+	
 	public HashMap<MissingFeatureIndex, Double> calculateFeatureExpectation(
 			Instances oracleInstances, Instances trainingInstances, Instances evalInstances)
 			throws Exception {
