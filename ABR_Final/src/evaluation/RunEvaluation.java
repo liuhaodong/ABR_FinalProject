@@ -16,6 +16,22 @@ import dataUtility.ReadInstances;
 public class RunEvaluation {
 
 	public static ArrayList<MissingFeatureIndex> getQueryFeatures(
+			Instances trainInstances, double selectPercentage) throws Exception {
+		ArrayList<MissingFeatureIndex> resultList = new ArrayList<MissingFeatureIndex>();
+		for (int i = 0; i < trainInstances.numInstances(); i++) {
+			for (int j = 0; j < trainInstances.numAttributes(); j++) {
+				if (trainInstances.instance(i).isMissing(j)) {
+					double rand = Math.random();
+					if (rand < selectPercentage) {
+						resultList.add(new MissingFeatureIndex(i, j));
+					}
+				}
+			}
+		}
+		return resultList;
+	}
+
+	public static ArrayList<MissingFeatureIndex> getQueryFeatures(
 			String trainPath, double selectPercentage) throws IOException {
 		Instances trainInstances = ReadInstances.readInstances(trainPath);
 		ArrayList<MissingFeatureIndex> resultList = new ArrayList<MissingFeatureIndex>();
@@ -29,6 +45,23 @@ public class RunEvaluation {
 				}
 			}
 		}
+		return resultList;
+	}
+
+	public static ArrayList<MissingFeatureIndex> getQueryFeatures(
+			Instances trainInstances, int queryNum) {
+		ArrayList<MissingFeatureIndex> resultList = new ArrayList<MissingFeatureIndex>();
+		int count = 0;
+
+		for (int i = 0; i < trainInstances.numInstances() && count < queryNum; i++) {
+			for (int j = 0; j < trainInstances.numAttributes(); j++) {
+				if (trainInstances.instance(i).isMissing(j)) {
+					resultList.add(new MissingFeatureIndex(i, j));
+					count++;
+				}
+			}
+		}
+
 		return resultList;
 	}
 
@@ -58,11 +91,16 @@ public class RunEvaluation {
 		Instances evaluationInstances = ReadInstances
 				.readInstances(evaluationPath);
 
+		evaluateRandomLearner(oracleInstances, trainInstances, evaluationInstances);
+	}
+
+	public static void evaluateRandomLearner(Instances oracleInstances,
+			Instances trainInstances, Instances evalInstances) throws Exception {
 		ArrayList<MissingFeatureIndex> featuresToQuery = getQueryFeatures(
-				trainPath, 1);
+				trainInstances, 0.3);
 
 		Evaluation trainEval = NBEvaluate.eval(trainInstances,
-				evaluationInstances);
+				evalInstances);
 		System.out.println(trainEval.toSummaryString());
 
 		for (MissingFeatureIndex tmpFeatureIndex : featuresToQuery) {
@@ -73,7 +111,7 @@ public class RunEvaluation {
 		}
 
 		Evaluation trainEval2 = NBEvaluate.eval(trainInstances,
-				evaluationInstances);
+				evalInstances);
 		System.out.println(trainEval2.toSummaryString());
 	}
 
@@ -121,7 +159,6 @@ public class RunEvaluation {
 		System.out.println(trainEval.toSummaryString());
 		int batchNum = 50;
 
-
 		for (Entry<MissingFeatureIndex, Double> tmpEntry : sortedMap.entrySet()) {
 			if (batchNum == 0) {
 				break;
@@ -130,8 +167,8 @@ public class RunEvaluation {
 			}
 			int tmpInstanceIndex = tmpEntry.getKey().instanceIndex;
 			int tmpFeatureIndex = tmpEntry.getKey().featureIndex;
-		//	System.out.println("instance quieried id: " + tmpInstanceIndex
-		//			+ " feature id: " + tmpFeatureIndex);
+			// System.out.println("instance quieried id: " + tmpInstanceIndex
+			// + " feature id: " + tmpFeatureIndex);
 			trainInstances.instance(tmpInstanceIndex).setValue(
 					tmpFeatureIndex,
 					oracleInstances.instance(tmpInstanceIndex).stringValue(
@@ -153,15 +190,16 @@ public class RunEvaluation {
 		evaluateActiveLeaner(oracleInstances, trainInstances, evalInstances);
 
 	}
-	
-	public static void evaluateSimplifiedActiveLeaner(Instances oracleInstances,
-			Instances trainInstances, Instances evalInstances, double selectRate) throws Exception{
+
+	public static void evaluateSimplifiedActiveLeaner(
+			Instances oracleInstances, Instances trainInstances,
+			Instances evalInstances, double selectRate) throws Exception {
 
 		CalculateExpectation test = new CalculateExpectation();
 
 		HashMap<MissingFeatureIndex, Double> resultMap = test
-				.calculateSimplifiedFeatureExpectation(oracleInstances, trainInstances,
-						evalInstances, selectRate);
+				.calculateSimplifiedFeatureExpectation(oracleInstances,
+						trainInstances, evalInstances, selectRate);
 		ValueComparator comparator = new ValueComparator(resultMap);
 		TreeMap<MissingFeatureIndex, Double> sortedMap = new TreeMap<MissingFeatureIndex, Double>(
 				comparator);
@@ -172,7 +210,6 @@ public class RunEvaluation {
 		System.out.println(trainEval.toSummaryString());
 		int batchNum = 100;
 
-
 		for (Entry<MissingFeatureIndex, Double> tmpEntry : sortedMap.entrySet()) {
 			if (batchNum == 0) {
 				break;
@@ -181,8 +218,8 @@ public class RunEvaluation {
 			}
 			int tmpInstanceIndex = tmpEntry.getKey().instanceIndex;
 			int tmpFeatureIndex = tmpEntry.getKey().featureIndex;
-		//	System.out.println("instance quieried id: " + tmpInstanceIndex
-		//			+ " feature id: " + tmpFeatureIndex);
+			// System.out.println("instance quieried id: " + tmpInstanceIndex
+			// + " feature id: " + tmpFeatureIndex);
 			trainInstances.instance(tmpInstanceIndex).setValue(
 					tmpFeatureIndex,
 					oracleInstances.instance(tmpInstanceIndex).stringValue(
@@ -195,12 +232,14 @@ public class RunEvaluation {
 	}
 
 	public static void evaluateSimplifiedActiveLeaner(String oraclePath,
-			String trainPath, String evaluationPath, double selectRate) throws Exception {
+			String trainPath, String evaluationPath, double selectRate)
+			throws Exception {
 		Instances oracleInstances = ReadInstances.readInstances(oraclePath);
 		Instances trainInstances = ReadInstances.readInstances(trainPath);
 		Instances evalInstances = ReadInstances.readInstances(evaluationPath);
 
-		evaluateSimplifiedActiveLeaner(oracleInstances, trainInstances, evalInstances, selectRate);
+		evaluateSimplifiedActiveLeaner(oracleInstances, trainInstances,
+				evalInstances, selectRate);
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -212,10 +251,14 @@ public class RunEvaluation {
 		Instances evalInstances = ReadInstances
 				.readInstances("data/mushroom_evaluation.arff");
 
+		evaluateRandomLearner(oracleInstances, trainInstances,
+				evalInstances);
 
-		evaluateSimplifiedActiveLeaner(oracleInstances, trainInstances, evalInstances,1);
-
-		evaluateSimplifiedActiveLeaner(oracleInstances, trainInstances, evalInstances,1);
+		evaluateRandomLearner(oracleInstances, trainInstances,
+				evalInstances);
+		
+		evaluateRandomLearner(oracleInstances, trainInstances,
+				evalInstances);
 
 	}
 
