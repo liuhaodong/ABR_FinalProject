@@ -46,8 +46,8 @@ public class FeatureRemove {
 
 	public static void main(String[] args) throws IOException {
 		FeatureRemove tmpFeatureRemove = new FeatureRemove();
-		tmpFeatureRemove.randomRemoveFeature("data/mushroom_train.arff",
-				"data/mushroom_train_miss.arff", (float) 0.5);
+		tmpFeatureRemove.randomRemoveFeature("data/mushroom_train025.arff",
+				"data/mushroom_train_miss025.arff", (float) 0.25);
 	}
 
 }

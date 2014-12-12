@@ -50,13 +50,19 @@ public class FeatureUtility {
 					tmpIndex);
 			tmpIndex++;
 		}
-
-		for (int i = 0; i < train.numInstances()&&Math.random()<selectRate; i++) {
+		
+		int countMissTotal = 0;
+		int countMissCal = 0;
+		for (int i = 0; i < train.numInstances(); i++) {
 			//System.out.println("instance: " + i);
 			for (int j = 0; j < train.numAttributes(); j++) {
+				
 				Instance tmpInstance = train.instance(i);
 				ArrayList<Double> sumLGList = new ArrayList<Double>();
 				if (tmpInstance.isMissing(j)) {
+					countMissTotal++;
+					if(Math.random() > selectRate) continue;
+					countMissCal++;
 					// If a feature is missing, then calculate LG
 					Attribute missAttribute = tmpInstance.attribute(j);
 					Enumeration<?> missValues = missAttribute.enumerateValues();
@@ -98,6 +104,8 @@ public class FeatureUtility {
 				}
 			}
 		}
+		System.out.println("Total"+ countMissTotal);
+		System.out.println("MissCal"+ countMissCal);
 		return resultMap;
 	}
 	

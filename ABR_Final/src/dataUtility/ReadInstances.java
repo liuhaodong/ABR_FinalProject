@@ -12,7 +12,7 @@ public class ReadInstances {
 		Instances train = new Instances(bReader);
 		train.setClassIndex(0);
 		train.deleteAttributeAt(15);
-		train.deleteAttributeAt(5);
+		//train.deleteAttributeAt(5);
 		bReader.close();
 		return train;
 	}
